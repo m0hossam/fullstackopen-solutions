@@ -1,59 +1,11 @@
-import { useState } from 'react'
-
-const Search = ({filterName, changeFilterName}) => {
-  return (
-    <div>
-      <h2>Filter Phonebook with Name</h2>
-      <p>filter show with</p>
-      <input value={filterName} onChange={changeFilterName}/>
-    </div>
-  );
-}
-
-const PersonForm = ({addNewPerson, newName, changeNewName, newNumber, changeNewNumber}) => {
-  return (
-    <div>
-      <h2>Add a New Person</h2>
-      <form onSubmit={addNewPerson}>
-        <div>
-          name: <input value={newName} onChange={changeNewName}/>
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={changeNewNumber}/>
-        </div>    
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-const PhoneBook = ({persons, filterName}) => {
-  const isFiltered = filterName !== '';
-  let filteredPersons;
-
-  if (isFiltered) {
-    filteredPersons = persons.filter((person) => person.name.toLowerCase().includes(filterName.toLowerCase()));
-  }
-
-  return (
-    <div>
-      <h2>The Phonebook</h2>
-      <ul>
-        {(isFiltered ? filteredPersons : persons).map((person) => <li key={person.id}>{person.name} {person.number}</li>)}
-      </ul>
-    </div>
-  );
-}
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import Search from './components/Search'
+import PersonForm from './components/PersonForm'
+import PhoneBook from './components/PhoneBook'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filterName, setFilterName] = useState('');
@@ -61,11 +13,10 @@ const App = () => {
   const changeNewName = (event) => setNewName(event.target.value);
   const changeNewNumber = (event) => setNewNumber(event.target.value);
   const changeFilterName = (event) => setFilterName(event.target.value);
-
   const addNewPerson = (event) => {
     event.preventDefault(); // prevent default redirection behavior of submitting forms
 
-    if (newName === '' || newNumber === '') {
+    if (newName === '' || newNumber === '') { // require both name & number inputs
       alert(`Both name and phone fields are required`);
       return;
     }
@@ -74,8 +25,20 @@ const App = () => {
       return;
     }
 
-    setPersons(persons.concat({name: newName, number: newNumber, id: persons.length + 1}));
+    setPersons(persons.concat({name: newName, number: newNumber, id: (persons.length + 1).toString()}));
+    // Empty all input fields:
+    setNewName('');
+    setNewNumber('');
+    setFilterName('');
   }
+
+  const fetchPersons = () => {
+    axios.get('http://localhost:3001/persons').then((response) => {
+      setPersons(response.data);
+    })
+  }
+
+  useEffect(fetchPersons, []); // fetch persons after initial render only
 
   return (
     <div>
