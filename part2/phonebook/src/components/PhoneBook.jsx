@@ -1,4 +1,4 @@
-const PhoneBook = ({persons, filterName}) => {
+const PhoneBook = ({persons, filterName, deletePerson}) => {
     const isFiltered = filterName !== '';
     let filteredPersons;
   
@@ -10,7 +10,10 @@ const PhoneBook = ({persons, filterName}) => {
       <div>
         <h2>The Phonebook</h2>
         <ul>
-          {(isFiltered ? filteredPersons : persons).map((person) => <li key={person.id}>{person.name} {person.number}</li>)}
+          {(isFiltered ? filteredPersons : persons).map((person) => <li key={person.id}>
+            <span>{person.name} {person.number} </span>
+            <button onClick={() => deletePerson(person.id)}>delete</button>
+            </li>)}
         </ul>
       </div>
     );
