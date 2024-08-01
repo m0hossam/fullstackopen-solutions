@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import countriesService from './services/countries'
-import SearchField from "./components/SearchField";
-import CountriesList from "./components/CountriesList";
+import SearchField from "./components/SearchField"
+import CountriesList from "./components/CountriesList"
 
 const App = () => {
   const [countries, setCountries] = useState([]);

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState } from 'react'
 import weatherService from '../services/weather'
+import CountrySection from './CountrySection'
+import WeatherSection from './WeatherSection'
 
 const CountriesList = ({countries, countryName, showCountry}) => {
     const [weather, setWeather] = useState(null);
@@ -16,41 +18,48 @@ const CountriesList = ({countries, countryName, showCountry}) => {
 
     if (filteredCountries.length === 1) {
         const country = filteredCountries[0];
+        let displayWeather = true; // to catch errors gracefully
 
         if (weather === null) {
+            displayWeather = false;
             weatherService.getWeather(country.capital[0])
             .then(weatherResponse => {
                 setWeather(weatherResponse);
             })
-            .catch((error) => console.log(error));
-            return null; // weather state has not been initialized yet
+            .catch(() => console.log('Weather service unavailable.'));
         }
 
         if (weather !== null) {
             if (weather.name !== country.capital[0]) { // check if we already have the weather state of the current city
+                displayWeather = false; //
                 weatherService.getWeather(country.capital[0])
                 .then(weatherResponse => {
                     setWeather(weatherResponse);
                 })
-                .catch((error) => console.log(error));
+                .catch(() => setWeather(null));
             }
         }
 
         return (
             <div>
-                <h2>{country.name.common}</h2>
-                <p>Capital: {country.capital[0]}</p>
-                <p>Area: {country.area} km<sup>2</sup></p>
-                <h4>Languages:</h4>
-                <ul>
-                    {Object.values(country.languages).map(lang => 
-                    <li key={lang}>{lang}</li>)}
-                </ul>
-                <img src={country.flags.png} alt={country.flags.alt}/>
-                <h4>Weather in {country.capital[0]}:</h4>
-                <p>Temperature: {weather.main.temp} Celcius</p>
-                <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="weather icon"/>
-                <p>Wind: {weather.wind.speed} m/s</p>
+                <CountrySection 
+                countryName={country.name.common} 
+                capitalName={country.capital[0]} 
+                countryArea={country.area} 
+                countryLangs={Object.values(country.languages)} 
+                flagSrc={country.flags.png} 
+                flagAlt={country.flags.alt}/>
+                {
+                    displayWeather 
+                    ?
+                    <WeatherSection
+                    cityName={country.capital[0]} 
+                    temperature={weather.main.temp} 
+                    speed={weather.wind.speed} 
+                    iconSrc={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}/> 
+                    : 
+                    <p>Weather service is unavailable right now.</p>
+                }
             </div>
         );
     }
