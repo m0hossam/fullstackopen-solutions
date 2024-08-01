@@ -8,6 +8,7 @@ const App = () => {
   const [countryName, setCountryName] = useState('');
 
   const changeCountryName = (event) => setCountryName(event.target.value);
+  const showCountry = (name) => setCountryName(name);
   
   useEffect(() => {
     countriesService.getAllCountries().then((initialCountries) => setCountries(initialCountries));
@@ -16,7 +17,7 @@ const App = () => {
   return (
     <div>
       <SearchField countryName={countryName} changeCountryName={changeCountryName}/>
-      <CountriesList countries={countries} countryName={countryName}/>
+      <CountriesList countries={countries} countryName={countryName} showCountry={showCountry}/>
     </div>
   )
 }

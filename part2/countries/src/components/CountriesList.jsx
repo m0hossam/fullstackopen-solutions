@@ -1,4 +1,4 @@
-const CountriesList = ({countries, countryName}) => {
+const CountriesList = ({countries, countryName, showCountry}) => {
     if (countries.length === 0 || countryName === '') {
         return null;
     }
@@ -30,7 +30,8 @@ const CountriesList = ({countries, countryName}) => {
         <ul>
             {filteredCountries.map(c => 
                 <li key={c.cca2}>
-                    {c.name.common}
+                    {c.name.common} 
+                    <button onClick={() => showCountry(c.name.common)}>Show</button>
                 </li>
             )}
         </ul>
