@@ -30,48 +30,44 @@ const App = () => {
   const changeNewNumber = (event) => setNewNumber(event.target.value);
   const changeFilterName = (event) => setFilterName(event.target.value);
 
+  const setTempNotification = (notif, time) => {
+    setNotification(notif);
+    setTimeout(() => setNotification(null), time);
+  }
+
   const updatePerson = (existingPerson) => {
     const isUpdateConfirmed = confirm(`'${existingPerson.name}' is already added to the phonebook, do you want to replace the old number with a new one?`);
     if (isUpdateConfirmed) {
       const newPerson = {...existingPerson, number: newNumber};
       
       personService.updatePerson(newPerson.id, newPerson)
-      
-      .then(updatedPerson => {
-        setPersons(persons.map(person => (person.id === newPerson.id) ? updatedPerson : person)); // only swap the person whose number is updated
-        emptyForm();
-        const successNotification = {
-          message: `Updated the info of '${updatedPerson.name}' successfully.`,
-          isError: false
-        };
-        setNotification(successNotification);
-        setTimeout(() => setNotification(null), 5000);
-      })
-      
-      .catch(() => {
-        setPersons(persons.filter(person => person.id !== existingPerson.id));
-        const errorNotification = {
-          message: `'${existingPerson.name}' has already been removed from the phonebook.`,
-          isError: true
-        };
-        setNotification(errorNotification);
-        setTimeout(() => setNotification(null), 5000);
-      });
+        .then(updatedPerson => {
+          setPersons(persons.map(person => (person.id === newPerson.id) ? updatedPerson : person)); // only swap the person whose number is updated
+          emptyForm();
+          const successNotification = {
+            message: `Updated the info of '${updatedPerson.name}' successfully.`,
+            isError: false
+          };
+          setTempNotification(successNotification, 5000);
+        })
+        .catch((error) => {
+          const errorMsg = error.response.data.error
+          const errorNotification = {
+            message: errorMsg ? errorMsg : `'${existingPerson.name}' has already been deleted.`,
+            isError: true
+          }
+          if (errorMsg) { // validation error
+            console.log(errorMsg);
+          } else { // person already deleted from another browser
+            setPersons(persons.filter(person => person.id !== existingPerson.id));
+          }
+          setTempNotification(errorNotification, 5000);
+        });
     }
   }
 
   const addNewPerson = (event) => {
     event.preventDefault(); // prevent default redirection behavior of submitting forms
-
-    if (newName === '' || newNumber === '') { // require both name & number inputs
-      const errorNotification = {
-        message: 'Both name and phone fields are required.',
-        isError: true
-      };
-      setNotification(errorNotification);
-      setTimeout(() => setNotification(null), 5000);
-      return;
-    }
 
     const existingPerson = persons.find((person) => person.name === newName); // update phone number if name exists
     if (existingPerson !== undefined) { // probably use strict equality for undefined
@@ -83,16 +79,26 @@ const App = () => {
       name: newName,
       number: newNumber
     };
-    personService.addPerson(newPerson).then((createdPerson) => {
-      setPersons(persons.concat(createdPerson));
-      emptyForm();
-      const successNotification = {
-        message: `Added '${createdPerson.name}' to the phonebook successfully.`,
-        isError: false
-      };
-      setNotification(successNotification);
-      setTimeout(() => setNotification(null), 5000);
-    })
+
+    personService.addPerson(newPerson)
+      .then((createdPerson) => {
+        setPersons(persons.concat(createdPerson));
+        emptyForm();
+        const successNotification = {
+          message: `Added '${createdPerson.name}' to the phonebook successfully.`,
+          isError: false
+        };
+        setTempNotification(successNotification, 5000);
+      })
+      .catch(error => {
+        const errorMsg = error.response.data.error
+        console.log(errorMsg);
+        const errorNotification = {
+          message: errorMsg,
+          isError: true
+        }
+        setTempNotification(errorNotification, 5000);
+      })
   }
 
   const deletePerson = (id) => {
@@ -108,8 +114,7 @@ const App = () => {
           message: `Deleted '${personName}' from the phonebook successfully.`,
           isError: false
         };
-        setNotification(successNotification);
-        setTimeout(() => setNotification(null), 5000);
+        setTempNotification(successNotification, 5000);
       })
       
       .catch(() => {
@@ -118,8 +123,7 @@ const App = () => {
           message: `'${personName}' has already been removed from the phonebook.`,
           isError: true
         };
-        setNotification(errorNotification);
-        setTimeout(() => setNotification(null), 5000);
+        setTempNotification(errorNotification, 5000);
       });
     }
   }
