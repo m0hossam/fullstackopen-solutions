@@ -61,7 +61,7 @@ const App = () => {
           } else { // person already deleted from another browser
             setPersons(persons.filter(person => person.id !== existingPerson.id));
           }
-          setTempNotification(errorNotification, 5000);
+          setTempNotification(errorNotification, 7500);
         });
     }
   }
@@ -97,7 +97,7 @@ const App = () => {
           message: errorMsg,
           isError: true
         }
-        setTempNotification(errorNotification, 5000);
+        setTempNotification(errorNotification, 7500);
       })
   }
 
@@ -108,7 +108,7 @@ const App = () => {
       
       personService.deletePerson(id)
 
-      .then((deletedPerson) => {
+      .then(() => {
         setPersons(persons.filter(person => person.id !== id));
         const successNotification = {
           message: `Deleted '${personName}' from the phonebook successfully.`,
@@ -123,7 +123,7 @@ const App = () => {
           message: `'${personName}' has already been removed from the phonebook.`,
           isError: true
         };
-        setTempNotification(errorNotification, 5000);
+        setTempNotification(errorNotification, 7500);
       });
     }
   }
